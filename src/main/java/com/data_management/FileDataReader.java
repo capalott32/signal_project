@@ -32,4 +32,9 @@ public class FileDataReader implements DataReader {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void readData(DataStorage dataStorage) throws IOException {
+
+    }
 }

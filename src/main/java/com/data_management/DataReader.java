@@ -3,6 +3,8 @@ package com.data_management;
 import java.io.IOException;
 
 public interface DataReader {
+    void readData(String filePath);
+
     /**
      * Reads data from a specified source and stores it in the data storage.
      * 

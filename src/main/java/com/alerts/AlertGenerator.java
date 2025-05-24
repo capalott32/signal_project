@@ -19,7 +19,7 @@ import java.util.Deque;
  * relies on a {@link DataStorage} instance to access patient data and evaluate
  * it against specific health criteria.
  */
-public class AlertGenerator {
+public class AlertGenerator implements AlertListener{
     private DataStorage dataStorage;
 
     /**
@@ -99,25 +99,6 @@ public class AlertGenerator {
                 + " | Condition: " + alert.getCondition()
                 + " | Timestamp: " + alert.getTimestamp());
     }
-    @Test
-    void testBloodPressureAlerts() {
-        DataStorage storage = new DataStorage();
-        Patient patient = new Patient(1);
-
-        // Simulate abnormal BP
-        patient.addRecord(185, "SystolicPressure", System.currentTimeMillis());
-        patient.addRecord(65, "DiastolicPressure", System.currentTimeMillis());
-
-        // Simulate increasing trend
-        patient.addRecord(110, "SystolicPressure", 1);
-        patient.addRecord(125, "SystolicPressure", 2);
-        patient.addRecord(140, "SystolicPressure", 3);
-
-        com.alerts.AlertGenerator generator = new com.alerts.AlertGenerator(storage);
-        generator.evaluateData(patient);
-
-        // Check console output or captured alerts
-    }
     private void checkHypotensiveHypoxemiaAlert(Patient patient){
         List<PatientRecord> records = patient.getRecords(Long.MIN_VALUE, Long.MAX_VALUE);
         List<PatientRecord> bpRecords = records.stream().filter(r -> r.getRecordType().equalsIgnoreCase("Systolic Blood Pressure")).sorted(Comparator.comparingLong(PatientRecord::getTimestamp)).toList();
@@ -149,6 +130,10 @@ public class AlertGenerator {
         }
     }
 
+    @Override
+    public void onAlert(Alert alert) {
+        if("Triggered Alert".equalsIgnoreCase(alert.getCondition())) triggerAlert(alert);
+    }
 } /*Filters and sorts systolic and diastolic records.
 
 Detects increasing/decreasing trends across 3 values.
