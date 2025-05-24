@@ -42,7 +42,9 @@ public class AlertGenerator {
      * @param patient the patient data to evaluate for alert conditions
      */
     public void evaluateData(Patient patient) {
-        List<PatientRecord> allRecords = patient.getRecords(Long.MIN_VALUE, Long.MAX_VALUE);
+        List<PatientRecord> allRecords = patient.getRecords(Long.MIN_VALUE, Long.MAX_VALUE); //Filters and sorts systolic and diastolic records.
+
+
 
         List<PatientRecord> systolic = allRecords.stream()
                 .filter(r -> r.getRecordType().equalsIgnoreCase("SystolicPressure"))
@@ -58,10 +60,21 @@ public class AlertGenerator {
         checkTrends(diastolic, patient.getPatientId(), "DiastolicPressure");
 
         checkThresholds(systolic, diastolic, patient.getPatientId());
+        List<PatientRecord> saturation = filterAndSort(allRecords, "BloodSaturation");
+        checkLowSaturation(saturation, patient.getPatientId());
+        checkRapidDrop(saturation, patient.getPatientId());
+
+    }
+     private List<PatientRecord> filterAndSort(List<PatientRecord> records, String type) {//helper method
+        return records.stream()
+                .filter(r -> r.getRecordType().equalsIgnoreCase(type))
+                .sorted(Comparator.comparingLong(PatientRecord::getTimestamp))
+                .collect(Collectors.toList());
     }
 
+
     private void checkTrends(List<PatientRecord> records, int patientId, String type) {
-        for (int i = 2; i < records.size(); i++) {
+        for (int i = 2; i < records.size(); i++) { //Detects increasing/decreasing trends across 3 values.
             double v1 = records.get(i - 2).getMeasurementValue();
             double v2 = records.get(i - 1).getMeasurementValue();
             double v3 = records.get(i).getMeasurementValue();
@@ -77,7 +90,7 @@ public class AlertGenerator {
     }
 
     private void checkThresholds(List<PatientRecord> systolic, List<PatientRecord> diastolic, int patientId) {
-        int size = Math.min(systolic.size(), diastolic.size());
+        int size = Math.min(systolic.size(), diastolic.size());//Checks threshold breaches for both systolic (>180 or <90) and diastolic (>120 or <60).
         for (int i = 0; i < size; i++) {
             double sys = systolic.get(i).getMeasurementValue();
             double dia = diastolic.get(i).getMeasurementValue();
@@ -88,14 +101,43 @@ public class AlertGenerator {
             }
         }
     }
+    private void checkLowSaturation(List<PatientRecord> records, int patientId) {
+        for (PatientRecord r : records) {
+            if (r.getMeasurementValue() < 92.0) {
+                triggerAlert(new Alert(String.valueOf(patientId), "LowSaturationAlert", r.getTimestamp()));
+            }
+        }
+    }
+    private void checkRapidDrop(List<PatientRecord> records, int patientId) {
+        for (int i = 0; i < records.size(); i++) {
+            double startValue = records.get(i).getMeasurementValue();
+            long startTime = records.get(i).getTimestamp();
 
-    private void triggerAlert(Alert alert) {
+            for (int j = i + 1; j < records.size(); j++) {
+                double nextValue = records.get(j).getMeasurementValue();
+                long nextTime = records.get(j).getTimestamp();
+
+                if (nextTime - startTime <= 10 * 60 * 1000) { // within 10 minutes
+                    if ((startValue - nextValue) >= 5.0) {
+                        triggerAlert(new Alert(String.valueOf(patientId), "RapidDropSaturationAlert", nextTime));
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+
+
+    private void triggerAlert(Alert alert) { //Sends all matched cases here
         System.out.println("ALERT: Patient " + alert.getPatientId()
                 + " | Condition: " + alert.getCondition()
                 + " | Timestamp: " + alert.getTimestamp());
     }
     @Test
-    void testBloodPressureAlerts() {
+    void testBloodPressureAlerts() {  //test for blood pressure
         DataStorage storage = new DataStorage();
         Patient patient = new Patient(1);
 
@@ -113,11 +155,27 @@ public class AlertGenerator {
 
         // Check console output or captured alerts
     }
+    @Test
+    void testBloodSaturationAlerts() { // test for blood saturation
+        Patient patient = new Patient(1);
 
-} /*Filters and sorts systolic and diastolic records.
+        // Low saturation reading (should trigger LowSaturationAlert)
+        patient.addRecord(89.0, "BloodSaturation", System.currentTimeMillis());
 
-Detects increasing/decreasing trends across 3 values.
+        // Simulate normal reading then a drop > 5% within 10 minutes (should trigger RapidDropSaturationAlert)
+        long baseTime = System.currentTimeMillis();
+        patient.addRecord(98.0, "BloodSaturation", baseTime);
+        patient.addRecord(92.5, "BloodSaturation", baseTime + 2 * 60 * 1000);  // 2 minutes later
+        patient.addRecord(91.0, "BloodSaturation", baseTime + 4 * 60 * 1000);  // 4 minutes later
+        patient.addRecord(92.0, "BloodSaturation", baseTime + 5 * 60 * 1000);  // 5 minutes later
+        patient.addRecord(90.0, "BloodSaturation", baseTime + 7 * 60 * 1000);  // > 5% drop in under 10 minutes
 
-Checks threshold breaches for both systolic (>180 or <90) and diastolic (>120 or <60).
+        AlertGenerator generator = new AlertGenerator(new DataStorage()); // storage not used in this test
+        generator.evaluateData(patient);
 
-Sends all matched cases to triggerAlert(...).*/
+        // Manually inspect console output OR enhance triggerAlert to save alerts in a List and assert
+    }
+
+
+
+}
