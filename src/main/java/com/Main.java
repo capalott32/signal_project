@@ -6,7 +6,7 @@ import java.io.IOException;
 
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {// allow switching between DataStorage and HealthDataSimulator
 
         if (args.length > 0 && args[0].equals("DataStorage")) {
             DataStorage.main(new String[]{});
