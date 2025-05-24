@@ -94,41 +94,6 @@ public class AlertGenerator {
                 + " | Condition: " + alert.getCondition()
                 + " | Timestamp: " + alert.getTimestamp());
     }
-    @Test
-    void testBloodPressureAlerts() {
-        DataStorage storage = new DataStorage();
-        Patient patient = new Patient(1);
-
-        // Simulate abnormal BP
-        patient.addRecord(185, "SystolicPressure", System.currentTimeMillis());
-        patient.addRecord(65, "DiastolicPressure", System.currentTimeMillis());
-
-        // Simulate increasing trend
-        patient.addRecord(110, "SystolicPressure", 1);
-        patient.addRecord(125, "SystolicPressure", 2);
-        patient.addRecord(140, "SystolicPressure", 3);
-
-        com.alerts.AlertGenerator generator = new com.alerts.AlertGenerator(storage);
-        generator.evaluateData(patient);
-
-        // Check console output or captured alerts
-    }
-    private void checkHypotensiveHypoxemiaAlert(Patient patient){
-        List<PatientRecord> records = patient.getRecords(Long.MIN_VALUE, Long.MAX_VALUE);
-        List<PatientRecord> bpRecords = records.stream().filter(r -> r.getRecordType().equalsIgnoreCase("Systolic Blood Pressure")).sorted(Comparator.comparingLong(PatientRecord::getTimestamp)).toList();
-        List<PatientRecord> o2Records = records.stream().filter(r -> r.getRecordType().equalsIgnoreCase("Oxygen Saturation")).sorted(Comparator.comparingLong(PatientRecord::getTimestamp)).toList();
-        for(PatientRecord bp : bpRecords){
-            if(bp.getMeasurementValue() >= 90) continue;
-            for(PatientRecord o2 : o2Records){
-                if(Math.abs(bp.getTimestamp() - o2.getTimestamp()) <= 60000){
-                    if(o2.getMeasurementValue() < 92){
-                        triggerAlert(new Alert(String.valueOf(patient.getPatientId()), "Hypotensive Hypoxemia Alert", bp.getTimestamp()));
-                        return;
-                    }
-                }
-            }
-        }
-    }
 
 } /*Filters and sorts systolic and diastolic records.
 
