@@ -1,0 +1,9 @@
+The Data Storage System UML diagram models how incoming patient data is securely stored, retrieved, and managed. It focuses on three main components: the DataStorage interface, the PatientRecord class (used in place of PatientData), and the DataRetriever class.
+
+The DataStorage interface defines methods for adding, retrieving, and deleting patient records. It ensures a modular and flexible design by abstracting the storage implementation details. The PatientRecord class represents one data entry point with a timestamp, patient ID, and a collection of vital signs (e.g., heart rate, oxygen levels). It encapsulates the data format and supports versioning through its timestamp.
+
+The DataRetriever class uses a DataStorage object to retrieve patient records by ID. It acts as a bridge between medical staff queries and the underlying data. A dependency arrow from DataRetriever to DataStorage highlights this usage.
+
+All associations and multiplicities reflect real-world relationships: one DataStorage manages many PatientRecords, and each DataRetriever relies on a single DataStorage interface. While not required by the prompt, a Patient class was added to reflect a natural grouping of records by patient, showcasing thoughtful system modeling.
+
+This design ensures data can be queried efficiently, supports potential data retention policies, and cleanly separates responsibilities using object-oriented principles like encapsulation and interface segregation.

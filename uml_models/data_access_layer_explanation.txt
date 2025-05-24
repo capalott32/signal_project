@@ -1,0 +1,9 @@
+The Data Access Layer UML diagram models the interface between external data sources (TCP, WebSocket, and File) and the internal data processing system. It provides a flexible and modular structure that separates raw input collection from parsing and storage logic.
+
+At the core of this design is the `DataListener` interface, which defines a unified method `listen()` for all incoming data sources. This interface is implemented by three concrete subclasses: `TCPDataListener`, `WebSocketDataListener`, and `FileDataListener`, each corresponding to a different input channel. This inheritance structure allows the system to support new types of input sources in the future with minimal changes to existing logic.
+
+The `DataParser` class handles parsing logic for incoming data formats such as JSON or CSV. It exposes a method `parse(rawData: String): Object`, which is designed to convert raw strings into usable objects.
+
+The `DataSourceAdapter` acts as the intermediary that connects the external listeners to the internal system. It holds a reference to a `DataParser`, which it uses to transform the raw data it receives. It then hands the parsed data to the next component in the processing pipeline. This dependency is modeled using a dashed `<<uses>>` relationship, reinforcing loose coupling.
+
+This separation of responsibilities ensures maintainability, testing ease, and future extensibility. The layered structure adheres to key design principles such as abstraction, interface segregation, and dependency inversion, enabling the system to scale with minimal refactoring.
