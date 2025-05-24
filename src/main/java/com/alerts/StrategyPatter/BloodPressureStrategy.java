@@ -9,7 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class BloodPressureStrategy implements AlertStrategy {
+public class BloodPressureStrategy implements AlertStrategy {
 
     @Override
     public void checkAlert(Patient patient, AlertListener listener) {
