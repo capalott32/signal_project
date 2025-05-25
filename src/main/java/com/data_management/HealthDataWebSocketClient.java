@@ -1,6 +1,8 @@
 package com.data_management;
 
+import com.data_management.DataStorage;
 import com.alerts.AlertGenerator;
+import com.data_management.Patient;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -8,12 +10,18 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * Reads a live stream of CSV‐formatted data from a WebSocket server.
- * Each incoming message must be: patientId,timestamp,label,value
- * Feeds each record into the injected DataStorage, and when the socket closes,
- * dumps all data and runs the AlertGenerator over it.
+/*Reads a live stream of CSV‐formatted data from a WebSocket server.
+  Each incoming message must be: patientId,timestamp,label,value
  */
+/* first in one terminal run
+java -cp "target\classes;target\dependency\*" com.cardio_generator.HealthDataSimulator --output websocket:8080
+
+then open 2nd terminal and run
+java -cp "target\classes;target\dependency\*" com.data_management.DataIngestionMain ws ws://localhost:8080
+or
+java ` -cp "target\classes;target\dependency\*" ` com.data_management.HealthDataWebSocketClient ws://localhost:8080
+it will show the data*/
+
 public class HealthDataWebSocketClient extends WebSocketClient {
     private final DataStorage storage;
     private final CountDownLatch closeLatch;
@@ -39,13 +47,18 @@ public class HealthDataWebSocketClient extends WebSocketClient {
         }
 
         try {
-            int    patientId = Integer.parseInt(parts[0]);
-            long   ts        = Long.parseLong(parts[1]);
-            String label     = parts[2];
-            double value     = Double.parseDouble(parts[3]);
+            int    patientId = Integer.parseInt(parts[0].trim());
+            long   ts        = Long.parseLong(parts[1].trim());
+            String label     = parts[2].trim();
+            String rawValue  = parts[3].trim();
+
+            // strip off any trailing “%” (or really any non-digit/non-dot just to be safe)
+            rawValue = rawValue.replaceAll("[^0-9.\\-]","");
+
+            double value     = Double.parseDouble(rawValue);
 
             storage.addPatientData(patientId, value, label, ts);
-            System.out.println("Stored: " + message);
+            System.out.println(" Stored: " + message);
         } catch (NumberFormatException e) {
             System.err.println(" Number parse error on message: " + message);
             e.printStackTrace();
