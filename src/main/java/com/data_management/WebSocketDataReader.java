@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * Reads a live CSV‐stream from a WebSocket server and feeds it into DataStorage.
+/*
+  Reads a live CSV‐stream from a WebSocket server and feeds it into DataStorage.
  */
 public class WebSocketDataReader implements DataReader {
 
@@ -25,7 +25,7 @@ public class WebSocketDataReader implements DataReader {
 
             @Override
             public void onMessage(String message) {
-                //Parse comma-separated message: patientId, timestamp, label, value
+                //Parse comma separated message: patientId, timestamp, label, value
                 String[] parts = message.split(",");
                 if (parts.length != 4) return; //Skip malformed messages
                 try {
