@@ -7,34 +7,28 @@ import java.io.IOException;
 public class FileDataReader implements DataReader {
     private final DataStorage storage;
 
+    // this is the one we need:
     public FileDataReader(DataStorage storage) {
         this.storage = storage;
     }
 
     @Override
-    public void readData(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+    public void readData(DataStorage storage, String path) throws IOException {
+        // your CSV‐parsing logic here, using 'path' instead of the old single‐arg.
+        try (BufferedReader r = new BufferedReader(new FileReader(path))) {
             String line;
-            while ((line = reader.readLine()) != null) {
-                // Format: patientId,timestamp,label,value
+            while ((line = r.readLine()) != null) {
                 String[] parts = line.split(",");
                 if (parts.length == 4) {
-                    int patientId = Integer.parseInt(parts[0]);
-                    long timestamp = Long.parseLong(parts[1]);
-                    String label = parts[2];
-                    double value = Double.parseDouble(parts[3]);
-
-                    storage.addPatientData(patientId, value, label, timestamp);
+                    int    id    = Integer.parseInt(parts[0]);
+                    long   ts    = Long.parseLong(parts[1]);
+                    String lbl   = parts[2];
+                    double val   = Double.parseDouble(parts[3]);
+                    storage.addPatientData(id, val, lbl, ts);
                 }
             }
-        } catch (IOException e) {
-            System.err.println("Failed to read data from file: " + filePath);
-            e.printStackTrace();
         }
     }
 
-    @Override
-    public void readData(DataStorage dataStorage) throws IOException {
-
-    }
+    // We no longer need the old single‐arg method; remove it.
 }
