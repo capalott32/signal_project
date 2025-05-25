@@ -2,6 +2,10 @@ package com.alerts.Singleton;
 
 import com.data_management.DataStorage;
 
+/**
+ * Provides a globally shared instance of DataStorage
+ * Ensures consistent state across all components that access patient data
+ */
 public class SingletonDataStorage {
     private static SingletonDataStorage instance;
     private DataStorage dataStorage;

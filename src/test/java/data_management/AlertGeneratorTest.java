@@ -3,6 +3,7 @@ import com.data_management.DataStorage;
 import com.data_management.Patient;
 import org.junit.jupiter.api.Test;
 
+//Verifies that alerts are triggered for high systolic (>180) and a rising trend across three measurements
 public class AlertGeneratorTest {
     @Test
     void testBloodPressureAlerts() {
