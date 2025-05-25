@@ -50,7 +50,7 @@ public class HealthDataWebSocketClient extends WebSocketClient {
             String label     = parts[2].trim();
             String rawValue  = parts[3].trim();
 
-            // strip off any trailing “%” (or really any non-digit/non-dot just to be safe)
+
             rawValue = rawValue.replaceAll("[^0-9.\\-]","");
 
             double value     = Double.parseDouble(rawValue);
@@ -81,16 +81,16 @@ public class HealthDataWebSocketClient extends WebSocketClient {
             System.exit(1);
         }
 
-        // 1) Set up storage & client
+        // Set up storage & client
         DataStorage storage = new DataStorage();
         HealthDataWebSocketClient client =
                 new HealthDataWebSocketClient(args[0], storage);
 
-        // 2) Connect and block until the server closes the socket
+        // Connect and block until the server closes the socket
         client.connectBlocking();
         client.closeLatch.await();
 
-        // 3) Dump everything we received
+        // 3) Dump everything received
         System.out.println("\n----- All patients and their records -----");
         for (var patient : storage.getAllPatients()) {
             System.out.println("Patient " + patient.getPatientId() + ":");
