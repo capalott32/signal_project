@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.alerts.AlertGenerator;
 
 /**
@@ -13,15 +15,12 @@ import com.alerts.AlertGenerator;
  * patient IDs.
  */
 public class DataStorage {
-    private Map<Integer, Patient> patientMap; // Stores patient objects indexed by their unique patient ID.
+    private final Map<Integer, Patient> patientMap = new ConcurrentHashMap<>(); // Stores patient objects indexed by their unique patient ID.
 
     /**
      * Constructs a new instance of DataStorage, initializing the underlying storage
      * structure.
      */
-    public DataStorage() {
-        this.patientMap = new HashMap<>();
-    }
 
     /**
      * Adds or updates patient data in the storage.
@@ -36,14 +35,7 @@ public class DataStorage {
      * @param timestamp        the time at which the measurement was taken, in
      *                         milliseconds since the Unix epoch
      */
-    public void addPatientData(int patientId, double measurementValue, String recordType, long timestamp) {
-        Patient patient = patientMap.get(patientId);
-        if (patient == null) {
-            patient = new Patient(patientId);
-            patientMap.put(patientId, patient);
-        }
-        patient.addRecord(measurementValue, recordType, timestamp);
-    }
+    public void addPatientData(int patientId, double measurementValue, String recordType, long timestamp) {patientMap.computeIfAbsent(patientId, id -> new Patient(id)).addRecord(measurementValue, recordType, timestamp);}
 
     /**
      * Retrieves a list of PatientRecord objects for a specific patient, filtered by
@@ -60,9 +52,7 @@ public class DataStorage {
      */
     public List<PatientRecord> getRecords(int patientId, long startTime, long endTime) {
         Patient patient = patientMap.get(patientId);
-        if (patient != null) {
-            return patient.getRecords(startTime, endTime);
-        }
+        if (patient != null) return patient.getRecords(startTime, endTime);
         return new ArrayList<>(); // return an empty list if no patient is found
     }
 
