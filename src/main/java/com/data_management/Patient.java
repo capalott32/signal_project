@@ -12,6 +12,7 @@ import java.util.List;
  */
 public class Patient {
     private final int patientId;
+    //Synchronized list ensures thread-safe access for concurrent data writes
     private final List<PatientRecord> patientRecords = Collections.synchronizedList(new ArrayList<>());
 
     /**
@@ -25,9 +26,8 @@ public class Patient {
     }
 
     /**
-     * Adds a new record to this patient's list of medical records.
-     * The record is created with the specified measurement value, record type, and
-     * timestamp.
+     * Adds a new record only if no existing record has the same timestamp and type
+     * Ensures no duplicate entries under concurrent conditions
      *
      * @param measurementValue the measurement value to store in the record
      * @param recordType       the type of record, e.g., "HeartRate",

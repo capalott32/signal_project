@@ -14,10 +14,7 @@ import java.util.Deque;
 
 
 /**
- * The {@code AlertGenerator} class is responsible for monitoring patient data
- * and generating alerts when certain predefined conditions are met. This class
- * relies on a {@link DataStorage} instance to access patient data and evaluate
- * it against specific health criteria.
+ * Evaluates patient data and generates alerts based on predefined rules, such as threshold breaches, trends, ECG anomalies, and critical conditions
  */
 public class AlertGenerator implements AlertListener{
     private DataStorage dataStorage;
@@ -35,12 +32,7 @@ public class AlertGenerator implements AlertListener{
     }
 
     /**
-     * Evaluates the specified patient's data to determine if any alert conditions
-     * are met. If a condition is met, an alert is triggered via the
-     * {@link #triggerAlert}
-     * method. This method should define the specific conditions under which an
-     * alert
-     * will be triggered.
+     * Entry point for checking all health conditions of a patient
      *
      * @param patient the patient data to evaluate for alert conditions
      */
@@ -56,15 +48,22 @@ public class AlertGenerator implements AlertListener{
                 .filter(r -> r.getRecordType().equalsIgnoreCase("DiastolicPressure"))
                 .sorted(Comparator.comparingLong(PatientRecord::getTimestamp))
                 .collect(Collectors.toList());
-
+        //Trend-based detection
         checkTrends(systolic, patient.getPatientId(), "SystolicPressure");
         checkTrends(diastolic, patient.getPatientId(), "DiastolicPressure");
-
+        //Threshold-based detection
         checkThresholds(systolic, diastolic, patient.getPatientId());
+        //Specialized alerts
         checkHypotensiveHypoxemiaAlert(patient);
         checkEcgAlerts(patient);
     }
 
+    /**
+     * Detects increasing or decreasing trends based on 3-point rolling window
+     * @param records
+     * @param patientId
+     * @param type
+     */
     private void checkTrends(List<PatientRecord> records, int patientId, String type) {
         for (int i = 2; i < records.size(); i++) {
             double v1 = records.get(i - 2).getMeasurementValue();
@@ -81,6 +80,12 @@ public class AlertGenerator implements AlertListener{
         }
     }
 
+    /**
+     * Checks if systolic or diastolic values breach clinical thresholds
+     * @param systolic
+     * @param diastolic
+     * @param patientId
+     */
     private void checkThresholds(List<PatientRecord> systolic, List<PatientRecord> diastolic, int patientId) {
         int size = Math.min(systolic.size(), diastolic.size());
         for (int i = 0; i < size; i++) {
@@ -94,11 +99,23 @@ public class AlertGenerator implements AlertListener{
         }
     }
 
+    /**
+     * Prints or propagates the alert
+     * @param alert
+     */
     private void triggerAlert(Alert alert) {
         System.out.println("ALERT: Patient " + alert.getPatientId()
                 + " | Condition: " + alert.getCondition()
                 + " | Timestamp: " + alert.getTimestamp());
     }
+
+    /**
+     * Evaluates a patient's blood pressure and oxygen records to detect a combined hypotensive-hypoxemia condition:
+     * -systolic BP < 90 AND
+     * -oxygen saturation < 92%
+     * within a 60-second window.
+     * @param patient
+     */
     private void checkHypotensiveHypoxemiaAlert(Patient patient){
         List<PatientRecord> records = patient.getRecords(Long.MIN_VALUE, Long.MAX_VALUE);
         List<PatientRecord> bpRecords = records.stream().filter(r -> r.getRecordType().equalsIgnoreCase("Systolic Blood Pressure")).sorted(Comparator.comparingLong(PatientRecord::getTimestamp)).toList();
@@ -115,6 +132,11 @@ public class AlertGenerator implements AlertListener{
             }
         }
     }
+
+    /**
+     * Detects ECG anomalies based on rolling standard deviation window
+     * @param patient
+     */
     private void checkEcgAlerts(Patient patient){
         List<PatientRecord> ecgRecords = patient.getRecords(Long.MIN_VALUE, Long.MAX_VALUE).stream().filter(r -> r.getRecordType().equalsIgnoreCase("ECG")).sorted(Comparator.comparingLong(PatientRecord::getTimestamp)).toList();
         Deque<Double> ecgWindow = new LinkedList<>();
@@ -130,6 +152,10 @@ public class AlertGenerator implements AlertListener{
         }
     }
 
+    /**
+     * Accepts triggered alerts via listener interface
+     * @param alert
+     */
     @Override
     public void onAlert(Alert alert) {
         if("Triggered Alert".equalsIgnoreCase(alert.getCondition())) triggerAlert(alert);

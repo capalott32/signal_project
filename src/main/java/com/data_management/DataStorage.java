@@ -15,18 +15,12 @@ import com.alerts.AlertGenerator;
  * patient IDs.
  */
 public class DataStorage {
+    //Thread-safe map for concurrent access by real-time data inputs
     private final Map<Integer, Patient> patientMap = new ConcurrentHashMap<>(); // Stores patient objects indexed by their unique patient ID.
 
     /**
-     * Constructs a new instance of DataStorage, initializing the underlying storage
-     * structure.
-     */
-
-    /**
-     * Adds or updates patient data in the storage.
-     * If the patient does not exist, a new Patient object is created and added to
-     * the storage.
-     * Otherwise, the new data is added to the existing patient's records.
+     * Adds or updates data for a patient
+     * Creates a new patient if none exists and appends data to their record list
      *
      * @param patientId        the unique identifier of the patient
      * @param measurementValue the value of the health metric being recorded

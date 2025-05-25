@@ -25,6 +25,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+/**
+ * Main driver for stimulating health data and streaming output
+ * Supports multiple output modes (console, file, TCP, WebSocket)
+ */
 public class HealthDataSimulator {
 
     private static int patientCount = 50; // Default number of patients
@@ -44,6 +48,11 @@ public class HealthDataSimulator {
         scheduleTasksForPatients(patientIds);
     }
 
+    /**
+     * Parses command-line arguments to set patient count and output type
+     * @param args
+     * @throws IOException
+     */
     private static void parseArguments(String[] args) throws IOException {
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
@@ -64,37 +73,7 @@ public class HealthDataSimulator {
                 case "--output":
                     if (i + 1 < args.length) {
                         String outputArg = args[++i];
-                        if (outputArg.equals("console")) {
-                            outputStrategy = new ConsoleOutputStrategy();
-                        } else if (outputArg.startsWith("file:")) {
-                            String baseDirectory = outputArg.substring(5);
-                            Path outputPath = Paths.get(baseDirectory);
-                            if (!Files.exists(outputPath)) {
-                                Files.createDirectories(outputPath);
-                            }
-                            outputStrategy = new FileOutputStrategy(baseDirectory);
-                        } else if (outputArg.startsWith("websocket:")) {
-                            try {
-                                int port = Integer.parseInt(outputArg.substring(10));
-                                // Initialize your WebSocket output strategy here
-                                outputStrategy = new WebSocketOutputStrategy(port);
-                                System.out.println("WebSocket output will be on port: " + port);
-                            } catch (NumberFormatException e) {
-                                System.err.println(
-                                        "Invalid port for WebSocket output. Please specify a valid port number.");
-                            }
-                        } else if (outputArg.startsWith("tcp:")) {
-                            try {
-                                int port = Integer.parseInt(outputArg.substring(4));
-                                // Initialize your TCP socket output strategy here
-                                outputStrategy = new TcpOutputStrategy(port);
-                                System.out.println("TCP socket output will be on port: " + port);
-                            } catch (NumberFormatException e) {
-                                System.err.println("Invalid port for TCP output. Please specify a valid port number.");
-                            }
-                        } else {
-                            System.err.println("Unknown output type. Using default (console).");
-                        }
+                        configureOutputStrategy(outputArg);
                     }
                     break;
                 default:
@@ -105,6 +84,44 @@ public class HealthDataSimulator {
         }
     }
 
+    /**
+     * Configures how output should be emitted (console/file/tcp/websocket)
+     * @param outputArg
+     * @throws IOException
+     */
+    private static void configureOutputStrategy(String outputArg) throws IOException{
+        if (outputArg.equals("console")) {
+            outputStrategy = new ConsoleOutputStrategy();
+        } else if (outputArg.startsWith("file:")) {
+            String baseDirectory = outputArg.substring(5);
+            Path outputPath = Paths.get(baseDirectory);
+            if (!Files.exists(outputPath)) {
+                Files.createDirectories(outputPath);
+            }
+            outputStrategy = new FileOutputStrategy(baseDirectory);
+        } else if (outputArg.startsWith("websocket:")) {
+            try {
+                int port = Integer.parseInt(outputArg.substring(10));
+                // Initialize your WebSocket output strategy here
+                outputStrategy = new WebSocketOutputStrategy(port);
+                System.out.println("WebSocket output will be on port: " + port);
+            } catch (NumberFormatException e) {
+                System.err.println(
+                        "Invalid port for WebSocket output. Please specify a valid port number.");
+            }
+        } else if (outputArg.startsWith("tcp:")) {
+            try {
+                int port = Integer.parseInt(outputArg.substring(4));
+                // Initialize your TCP socket output strategy here
+                outputStrategy = new TcpOutputStrategy(port);
+                System.out.println("TCP socket output will be on port: " + port);
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid port for TCP output. Please specify a valid port number.");
+            }
+        } else {
+            System.err.println("Unknown output type. Using default (console).");
+        }
+    }
     private static void printHelp() {
         System.out.println("Usage: java HealthDataSimulator [options]");
         System.out.println("Options:");
@@ -130,6 +147,10 @@ public class HealthDataSimulator {
         return patientIds;
     }
 
+    /**
+     * Schedules each data generator for each patient at a defined frequency
+     * @param patientIds
+     */
     private static void scheduleTasksForPatients(List<Integer> patientIds) {
         ECGDataGenerator ecgDataGenerator = new ECGDataGenerator(patientCount);
         BloodSaturationDataGenerator bloodSaturationDataGenerator = new BloodSaturationDataGenerator(patientCount);
