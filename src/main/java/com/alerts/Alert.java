@@ -1,10 +1,10 @@
 package com.alerts;
 
 // Represents an alert
-public class Alert {
-    private String patientId;
-    private String condition;
-    private long timestamp;
+public class Alert implements AlertInterface {
+    private final String patientId;
+    private final String condition;
+    private final long timestamp;
 
     public Alert(String patientId, String condition, long timestamp) {
         this.patientId = patientId;
@@ -23,4 +23,7 @@ public class Alert {
     public long getTimestamp() {
         return timestamp;
     }
+
+    @Override
+    public String getDetails() {return "ALERT: Patient " + patientId + " | Condition " + condition + " | Timestamp " + timestamp;}
 }
