@@ -6,6 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,7 +31,7 @@ public class WebSocketDataReaderTest {
         //Starts reader in background
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
-            try{reader.readData(storage, "ws://localhost: " + port);}
+            try{reader.readData(storage, "ws://localhost:" + port);}
             catch(Exception e){fail("Reader threw: " + e.getMessage());}
         });
         //Waits until client connects and sends valid data
@@ -48,7 +49,7 @@ public class WebSocketDataReaderTest {
         WebSocketDataReader reader = new WebSocketDataReader();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
-            try{reader.readData(storage, "ws://localhost: " + port);}
+            try{reader.readData(storage, "ws://localhost:" + port);}
             catch(Exception e){fail("Reader threw: " + e.getMessage());}
         });
         server.waitForConnection();
@@ -56,6 +57,54 @@ public class WebSocketDataReaderTest {
         Thread.sleep(300);
         assertTrue(storage.getAllPatients().isEmpty());
         server.broadcastClose("Closing after malformed");
+        executor.shutdownNow();
+    }
+    @Test
+    public void testAbruptDisconnection() throws Exception{
+        DataStorage storage = new DataStorage();
+        WebSocketDataReader reader = new WebSocketDataReader();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            try{reader.readData(storage, "ws://localhost:" + port);}
+            catch(IOException e){assertTrue(e.getMessage().contains("Interrupted"), "Should handle interrupted exception on abrupt close");}
+        });
+        server.waitForConnection();
+        server.sendMessage("1,1710000000000,HeartRate,75.5");
+        Thread.sleep(300);
+        server.broadcastClose("Simulated failure");
+        executor.shutdownNow();
+    }
+    @Test
+    public void testMixedValidAndInvalidMessages() throws Exception{
+        DataStorage storage = new DataStorage();
+        WebSocketDataReader reader = new WebSocketDataReader();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            try{reader.readData(storage, "ws://localhost:" + port);}
+            catch(Exception e){fail("Reader should not crash on mixed messages");}
+        });
+        server.waitForConnection();
+        server.sendMessage("bad,message");
+        server.sendMessage("1,1710000000000,HeartRate,88.0");
+        Thread.sleep(300);
+        assertEquals(1, storage.getAllPatients().size(), "Valid message should still be processed");
+        server.broadcastClose("Close after mixed input");
+        executor.shutdownNow();
+    }
+    @Test
+    public void testRapidMessageFlood() throws Exception{
+        DataStorage storage = new DataStorage();
+        WebSocketDataReader reader = new WebSocketDataReader();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            try{reader.readData(storage, "ws://localhost:" + port);}
+            catch(Exception e){fail("Should handle high-throughput messages without failure");}
+        });
+        server.waitForConnection();
+        for(int i = 0; i < 50; i++) server.sendMessage("1," + (1710000000000L + i) + ",HeartRate," + (70 + i%5));
+        Thread.sleep(500);
+        assertEquals(50, storage.getRecords(1, Long.MIN_VALUE, Long.MAX_VALUE).size());
+        server.broadcastClose("Flood test done");
         executor.shutdownNow();
     }
 }
