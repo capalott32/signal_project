@@ -4,12 +4,15 @@ import com.alerts.AlertGenerator;
 
 import java.io.IOException;
 
-/**
- * Entrypoint for batch or real-time ingest of CSV‐formatted health data.
- *
+/*
+  Entrypoint for batch or real-time ingest of CSV‐formatted health data.
+
  * Usage:
- *   java com.data_management.DataIngestionMain file <path/to/data.csv>
- *   java com.data_management.DataIngestionMain ws   <ws://host:port>
+ first in one terminal run
+ java -cp "target\classes;target\dependency\*" com.cardio_generator.HealthDataSimulator --output websocket:8080
+
+ then open 2nd terminal and run
+ java -cp "target\classes;target\dependency\*" com.data_management.DataIngestionMain ws ws://localhost:8080
  */
 public class DataIngestionMain {
     public static void main(String[] args) throws IOException {

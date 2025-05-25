@@ -17,8 +17,6 @@ import java.util.concurrent.CountDownLatch;
 java -cp "target\classes;target\dependency\*" com.cardio_generator.HealthDataSimulator --output websocket:8080
 
 then open 2nd terminal and run
-java -cp "target\classes;target\dependency\*" com.data_management.DataIngestionMain ws ws://localhost:8080
-or
 java ` -cp "target\classes;target\dependency\*" ` com.data_management.HealthDataWebSocketClient ws://localhost:8080
 it will show the data*/
 
