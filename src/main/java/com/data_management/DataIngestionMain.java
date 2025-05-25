@@ -8,6 +8,8 @@ import java.io.IOException;
   Entrypoint for batch or real-time ingest of CSV‐formatted health data.
 
  * Usage:
+ 1- just run it , will read sample.csv
+ 2- as follows ->
  first in one terminal run
  java -cp "target\classes;target\dependency\*" com.cardio_generator.HealthDataSimulator --output websocket:8080
 
@@ -53,7 +55,7 @@ public class DataIngestionMain {
                 System.out.printf("  [%d] %s = %.2f%n",
                         rec.getTimestamp(), rec.getRecordType(), rec.getMeasurementValue());
 
-            }// write this in terminal java -jar target/cardio_generator-1.0-SNAPSHOT.jar file sample.csv
+            }
 
         }
         System.out.println("----- Evaluating alerts -----");

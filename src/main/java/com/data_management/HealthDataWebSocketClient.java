@@ -22,7 +22,7 @@ it will show the data*/
 
 public class HealthDataWebSocketClient extends WebSocketClient {
     private final DataStorage storage;
-    private final CountDownLatch closeLatch;
+    public final CountDownLatch closeLatch;
 
     public HealthDataWebSocketClient(String serverUri, DataStorage storage) throws Exception {
         super(new URI(serverUri));
