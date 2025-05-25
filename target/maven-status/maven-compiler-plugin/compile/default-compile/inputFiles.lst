@@ -30,11 +30,11 @@ C:\Users\User\new_folder\src\main\java\com\cardio_generator\outputs\FileOutputSt
 C:\Users\User\new_folder\src\main\java\com\cardio_generator\outputs\OutputStrategy.java
 C:\Users\User\new_folder\src\main\java\com\cardio_generator\outputs\TcpOutputStrategy.java
 C:\Users\User\new_folder\src\main\java\com\cardio_generator\outputs\WebSocketOutputStrategy.java
-C:\Users\User\new_folder\src\main\java\com\client\HealthDataWebSocketClient.java
 C:\Users\User\new_folder\src\main\java\com\data_management\DataIngestionMain.java
 C:\Users\User\new_folder\src\main\java\com\data_management\DataReader.java
 C:\Users\User\new_folder\src\main\java\com\data_management\DataStorage.java
 C:\Users\User\new_folder\src\main\java\com\data_management\FileDataReader.java
+C:\Users\User\new_folder\src\main\java\com\data_management\HealthDataWebSocketClient.java
 C:\Users\User\new_folder\src\main\java\com\data_management\Patient.java
 C:\Users\User\new_folder\src\main\java\com\data_management\PatientRecord.java
 C:\Users\User\new_folder\src\main\java\com\data_management\WebSocketDataReader.java

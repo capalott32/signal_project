@@ -49,7 +49,9 @@ public class DataIngestionMain {
             for (PatientRecord rec : p.getRecords(Long.MIN_VALUE, Long.MAX_VALUE)) {
                 System.out.printf("  [%d] %s = %.2f%n",
                         rec.getTimestamp(), rec.getRecordType(), rec.getMeasurementValue());
-            }
+
+            }// write this in terminal java -jar target/cardio_generator-1.0-SNAPSHOT.jar file sample.csv
+
         }
         System.out.println("----- Evaluating alerts -----");
         AlertGenerator alertGen = new AlertGenerator(storage);
@@ -58,8 +60,7 @@ public class DataIngestionMain {
         }
         System.out.println("Alert evaluation finished.");
 
-        // At this point, storage has been fed.  If you're in WS mode,
-        // this will block until the socket closes.
+
         System.out.println("Data ingestion finished.");
     }
 }

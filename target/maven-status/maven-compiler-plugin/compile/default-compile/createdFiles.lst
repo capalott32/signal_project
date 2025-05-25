@@ -32,12 +32,12 @@ com\cardio_generator\generators\AlertGenerator.class
 com\cardio_generator\outputs\WebSocketOutputStrategy.class
 com\alerts\StrategyPatter\OxygenSaturationStrategy.class
 com\alerts\AlertGenerator.class
+com\data_management\HealthDataWebSocketClient.class
 com\alerts\factory\BloodOxygenAlertFactory.class
 com\alerts\StrategyPatter\OxygenSaturationStrategyTest.class
 com\data_management\DataIngestionMain.class
 com\cardio_generator\outputs\FileOutputStrategy.class
 com\data_management\FileDataReader.class
-com\client\HealthDataWebSocketClient.class
 com\alerts\StrategyPatter\AlertStrategy.class
 com\cardio_generator\generators\BloodPressureDataGenerator.class
 com\cardio_generator\generators\PatientDataGenerator.class

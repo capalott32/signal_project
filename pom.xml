@@ -93,7 +93,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.5.6</version> <!-- Use the version that's compatible with your Spring Boot version -->
                 <configuration>
-                    <mainClass>com.Main</mainClass>
+                    <mainClass>com.data_management.DataIngestionMain</mainClass>
                 </configuration>
                 <executions>
                     <execution>
@@ -144,7 +144,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.client.HealthDataWebSocketClient</mainClass>
+                                    <mainClass>com.data_management.HealthDataWebSocketClient</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

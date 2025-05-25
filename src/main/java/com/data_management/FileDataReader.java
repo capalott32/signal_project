@@ -30,5 +30,5 @@ public class FileDataReader implements DataReader {
         }
     }
 
-    // We no longer need the old single‐arg method; remove it.
+
 }
