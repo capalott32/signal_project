@@ -1,6 +1,7 @@
 package com.data_management;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -10,8 +11,8 @@ import java.util.List;
  * of medical records based on specified criteria.
  */
 public class Patient {
-    private int patientId;
-    private List<PatientRecord> patientRecords;
+    private final int patientId;
+    private final List<PatientRecord> patientRecords = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Constructs a new Patient with a specified ID.
@@ -21,7 +22,6 @@ public class Patient {
      */
     public Patient(int patientId) {
         this.patientId = patientId;
-        this.patientRecords = new ArrayList<>();
     }
 
     /**
@@ -36,8 +36,10 @@ public class Patient {
      *                         milliseconds since UNIX epoch
      */
     public void addRecord(double measurementValue, String recordType, long timestamp) {
-        PatientRecord record = new PatientRecord(this.patientId, measurementValue, recordType, timestamp);
-        this.patientRecords.add(record);
+        synchronized(patientRecords){
+            boolean duplicate = patientRecords.stream().anyMatch(record -> record.getTimestamp() == timestamp && record.getRecordType().equalsIgnoreCase(recordType));
+            if(!duplicate) patientRecords.add(new PatientRecord(patientId, measurementValue, recordType, timestamp));
+        }
     }
 
     /**
@@ -52,11 +54,12 @@ public class Patient {
      *         range
      */
     public List<PatientRecord> getRecords(long startTime, long endTime) {
-        // TODO Implement and test this method
         List<PatientRecord> filteredRecords = new ArrayList<>();
-        for (PatientRecord record : this.patientRecords) {
-            long timestamp = record.getTimestamp();
-            if (timestamp >= startTime && timestamp <= endTime) filteredRecords.add(record);
+        synchronized(patientRecords){
+            for(PatientRecord record: patientRecords){
+                long timestamp = record.getTimestamp();
+                if(timestamp >= startTime && timestamp <= endTime) filteredRecords.add(record);
+            }
         }
         return filteredRecords;
     }
